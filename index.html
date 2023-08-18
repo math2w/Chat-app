@@ -12,7 +12,7 @@
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js";
-    import { getFirestore, doc, setDoc, updateDoc, serverTimestamp, deleteField, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, updateDoc, serverTimestamp, deleteField, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
   
@@ -27,6 +27,7 @@
       appId: "1:363474692730:web:a20ba38348ea17d03fe9c3",
       measurementId: "G-NYXSDW76NT"
     };
+
   
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
@@ -38,7 +39,8 @@
     const removeuser = document.getElementById("removeuser");
     const createuser = document.getElementById("createuser");
 
-    await setDoc(doc(db, "users", "username"), {
+    await setDoc(doc(db, "app", "users"), {
+        
         username: "username123",
         password: "password123",
         coolstuff: {cool1: "yo mama", cool2: "poop"},
@@ -81,5 +83,12 @@
         await deleteDoc(userref);
     }
 
+    const ref = collection(db, "users");
+    onSnapshot(ref, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            const newItemData = change.doc.data();
+      console.log("New item added:", newItemData);
+        })
+    });
 
   </script>

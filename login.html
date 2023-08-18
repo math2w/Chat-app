@@ -1,0 +1,30 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>Test</title>
+</head>
+<html data-theme="dark"></html>
+
+<body>
+    <div id="hidediv" hidden="true">
+    <div class="hero" style="padding: 0 0 5%;">
+        <nav class="container-fluid">
+            <ul>
+                <li>
+                    <button id="back" style="background-color: #cccccc00; border-color: #cccccc00; font-size: 34px; font-weight: bolder;">To Do App</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <main class="container" style="background-color: #172129; padding: 3% 5% 3% 5%; border-radius: 20px;">
+        <center><h1>Log In</h1></center>
+        <div style="color: red;" hidden="true" id="wrongcode">Incorrect login!</div>
+        <input type="text" placeholder="username"  id="usernametext" maxlength="10">
+        <input type="password" placeholder="password" id="passwordtext" maxlength="20">
+        <button id="signin">sign in</button>
+    </main>
+</div>
+
+</body>
