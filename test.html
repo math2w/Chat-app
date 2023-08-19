@@ -1,0 +1,94 @@
+<body>
+    <h1>hi</h1>
+
+    <button id="changename">Change name</button>
+    <button id="removecoolstuff">Remove coolstuff</button>
+    <button id="removeuser">Remove user</button>
+    <button id="createuser">create user</button>
+
+</body>
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js";
+    import { getFirestore, doc, setDoc, updateDoc, serverTimestamp, deleteField, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyBnvQz_bDAUNop0tRht9sxrvQ3i5q28fIc",
+      authDomain: "chat-app-1cb83.firebaseapp.com",
+      projectId: "chat-app-1cb83",
+      storageBucket: "chat-app-1cb83.appspot.com",
+      messagingSenderId: "363474692730",
+      appId: "1:363474692730:web:a20ba38348ea17d03fe9c3",
+      measurementId: "G-NYXSDW76NT"
+    };
+
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    const db = getFirestore(app);
+    const changename = document.getElementById("changename");
+    const removecoolstuff = document.getElementById("removecoolstuff");
+    const removeuser = document.getElementById("removeuser");
+    const createuser = document.getElementById("createuser");
+
+    await setDoc(doc(db, "app", "users"), {
+        
+        username: "username123",
+        password: "password123",
+        coolstuff: {cool1: "yo mama", cool2: "poop"},
+        time: serverTimestamp()
+    });
+
+    function makenum() {
+        const num = Math.random() * 1000000;
+        return num;
+    }
+
+    createuser.onclick = async function() {
+        const usernum = makenum();
+        await setDoc(doc(db, "users", "users", "users", usernum.toString()), {
+            username: usernum.toString()
+        });
+    }
+
+
+    changename.onclick = async function() {
+        const userref = doc(db, "users", "username");
+
+        await updateDoc(userref, {
+            username: "newusername1234",
+            "coolstuff.cool1": "wow"
+        })
+    }
+
+    removecoolstuff.onclick = async function() {
+        const coolstuffref = doc(db, "users", "username");
+
+        await updateDoc(coolstuffref, {
+            "coolstuff.cool1": deleteField()
+        })
+    }
+
+    removeuser.onclick = async function() {
+        const userref = doc(db, "users", "username");
+
+        await deleteDoc(userref);
+    }
+
+    const ref = collection(db, "users");
+    onSnapshot(ref, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            const newItemData = change.doc.data();
+      console.log("New item added:", newItemData);
+        })
+    });
+
+  </script>

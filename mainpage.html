@@ -1,0 +1,154 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>Mattis Chat App</title>
+</head>
+<html data-theme="dark"></html>
+
+<body>
+    <div id="hidediv">
+    <div class="hero" style="padding: 0 0 5%;">
+        <nav class="container-fluid">
+            <ul>
+                <li>
+                    <button id="back" style="background-color: #cccccc00; border-color: #cccccc00; font-size: 34px; font-weight: bolder;" hidden="true">Chat App</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <main id="maindiv" class="container" style="display: flex; flex-direction: column-reverse; background-color: #1b2731; width: 70%; height: 82%; border-radius: 10px; margin-top: -7%; overflow-y: auto; position: relative;">
+        <div id="chatdiv" style="overflow-y: auto; position: relative;">
+            <div class="chat" style="padding: 4% 6% 0% 5%;" id="clonediv" hidden="true">
+                <h6 id="name" style="font-weight: bold; font-size: 22px; margin-left: 100px;">name <p style="text-align:right; margin-top: -3.3%; font-weight: normal;">Date</p></h6>
+                <p id="chattxt" style="margin-top: -1.5%; margin-left: 100px; white-space:break-spaces; overflow: auto;">chat text</p>
+                <img id="pfp" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541" width="65px" style="border-radius: 100%; margin-left: 10px; margin-top: -100px;">
+            </div>
+        </div>
+    </main>
+    <main class="container">
+        <input id="chatinput" type="text" style="background-color: #151f27; width: 85%; margin-left: 30px; border-radius: 10px;"></input>
+        <button id="send" style="width: 10%; margin-left: 88%; margin-top: -7%; border-radius: 10px;" disabled="true">Send</button>
+    </main>
+</body>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js";
+    import { getFirestore, orderBy, query,  doc, setDoc, updateDoc, serverTimestamp, deleteField, deleteDoc, onSnapshot, collection, getDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyBnvQz_bDAUNop0tRht9sxrvQ3i5q28fIc",
+      authDomain: "chat-app-1cb83.firebaseapp.com",
+      projectId: "chat-app-1cb83",
+      storageBucket: "chat-app-1cb83.appspot.com",
+      messagingSenderId: "363474692730",
+      appId: "1:363474692730:web:a20ba38348ea17d03fe9c3",
+      measurementId: "G-NYXSDW76NT"
+    };
+
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    const db = getFirestore(app);
+
+
+
+    const chatinput = document.getElementById("chatinput");
+    const send = document.getElementById("send");
+    const clonediv = document.getElementById("clonediv");
+    const maindiv = document.getElementById("maindiv");
+    const chatdiv = document.getElementById("chatdiv");
+
+    function getCookie(name) {
+  // Split all cookies into an array
+  var cookies = document.cookie.split(';');
+
+  // Loop through the cookies
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i];
+
+    // Trim leading and trailing spaces
+    cookie = cookie.trim();
+
+    // Check if the cookie starts with the name we're looking for
+    if (cookie.indexOf(name + '=') === 0) {
+      // Extract and return the cookie value
+      return cookie.substring(name.length + 1, cookie.length);
+    }
+  }
+
+  // Cookie not found
+  return null;
+}
+    
+    chatinput.addEventListener("keyup", (f) => {
+        if (chatinput.value != "") {
+            if (f.key == "Enter") {
+                sendMessage();
+            }
+            send.disabled = false;
+        } else {
+            send.disabled = true;
+        }
+    })
+
+    send.onclick = function() {
+        sendMessage();
+    }
+
+    
+    const ref = collection(db, "Chats");
+    const sortedref = query(ref, orderBy("date", "desc"));
+    onSnapshot(sortedref, (snapshot) => {
+        
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === "added") {
+
+
+            const newItemData = change.doc.data();
+      console.log("New item added:", newItemData);
+            const newdiv = clonediv.cloneNode(true);
+            newdiv.hidden = false;
+            var childs = newdiv.children;
+            childs[0].textContent = newItemData.user;
+            childs[1].textContent = newItemData.text;
+            
+            maindiv.appendChild(newdiv);
+            maindiv.scrollTop = maindiv.scrollHeight - maindiv.clientHeight;
+            chatdiv.after(newdiv);
+        }
+        })
+    });
+
+    async function sendMessage() {
+        var uid = Math.floor(Math.random() * 100000000000000000);
+        const username = getCookie("username");
+        send.disabled = true;
+        chatinput.disabled = true;
+
+ 
+
+       await setDoc(doc(db, "Chats", uid.toString()), {
+        user: username,
+        text: chatinput.value.toString(),
+        date: serverTimestamp() 
+       });
+       send.disabled = false;
+        chatinput.disabled = false;
+        chatinput.value = "";
+        maindiv.scrollTop = maindiv.scrollHeight - maindiv.clientHeight;
+
+
+    }
+
+</script>

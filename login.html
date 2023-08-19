@@ -2,12 +2,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
-    <title>Test</title>
+    <title>Mattis Chat App</title>
 </head>
 <html data-theme="dark"></html>
 
 <body>
-    <div id="hidediv" hidden="true">
+    <div id="hidediv">
     <div class="hero" style="padding: 0 0 5%;">
         <nav class="container-fluid">
             <ul>
@@ -23,8 +23,104 @@
         <div style="color: red;" hidden="true" id="wrongcode">Incorrect login!</div>
         <input type="text" placeholder="username"  id="usernametext" maxlength="10">
         <input type="password" placeholder="password" id="passwordtext" maxlength="20">
-        <button id="signin">sign in</button>
+        <button id="createbtn">sign in</button>
     </main>
 </div>
-
 </body>
+
+<script type="module">
+
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js";
+    import { getFirestore, doc, setDoc, updateDoc, serverTimestamp, deleteField, deleteDoc, onSnapshot, collection, getDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyBnvQz_bDAUNop0tRht9sxrvQ3i5q28fIc",
+      authDomain: "chat-app-1cb83.firebaseapp.com",
+      projectId: "chat-app-1cb83",
+      storageBucket: "chat-app-1cb83.appspot.com",
+      messagingSenderId: "363474692730",
+      appId: "1:363474692730:web:a20ba38348ea17d03fe9c3",
+      measurementId: "G-NYXSDW76NT"
+    };
+
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    const db = getFirestore(app);
+
+    function getCookie(name) {
+  // Split all cookies into an array
+  var cookies = document.cookie.split(';');
+
+  // Loop through the cookies
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i];
+
+    // Trim leading and trailing spaces
+    cookie = cookie.trim();
+
+    // Check if the cookie starts with the name we're looking for
+    if (cookie.indexOf(name + '=') === 0) {
+      // Extract and return the cookie value
+      return cookie.substring(name.length + 1, cookie.length);
+    }
+  }
+
+  // Cookie not found
+  return null;
+}
+
+
+    const createbtn = document.getElementById("createbtn");
+    const usernametext = document.getElementById("usernametext");
+    const passwordtext = document.getElementById("passwordtext");
+    const wrongcode = document.getElementById("wrongcode");
+    const username = getCookie("username");
+
+    if (username != null) {
+        const refuser = doc(db, "users", username);
+    const snapuser = await getDoc(refuser);
+    if (snapuser.exists()) {
+        window.location.replace("mainpage.html");
+    }
+    }
+
+
+
+
+    createbtn.onclick = async function() {
+        if (usernametext.value == "" && passwordtext.value == "") {
+            wrongcode.hidden = false;
+            wrongcode.textContent = "Please enter a username and password.";
+            usernametext.ariaInvalid = true;
+            passwordtext.ariaInvalid = true;
+            return;
+        }
+        const userref = doc(db, "users", usernametext.value.toString());
+        const usersnap = await getDoc(userref);
+
+        if (usersnap.exists() && passwordtext.value == usersnap.data().password) {
+            document.cookie = "username=" + usernametext.value + ";" + "expires=" + new Date(2038, 0, 1).toUTCString(); 
+            window.location.replace("mainpage.html");
+
+
+        }
+        else {
+            wrongcode.hidden = false;
+            wrongcode.textContent = "Username or Password is incorrect.";
+            usernametext.ariaInvalid = true;
+            passwordtext.ariaInvalid = true;
+            return;
+        }
+    }
+    
+
+</script>
