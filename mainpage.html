@@ -12,13 +12,34 @@
         <nav class="container-fluid">
             <ul>
                 <li>
-                    <button id="back" style="background-color: #cccccc00; border-color: #cccccc00; font-size: 34px; font-weight: bolder;" hidden="true">Chat App</button>
+                    <button id="back" style="background-color: #cccccc00; border-color: #cccccc00; font-size: 34px; font-weight: bolder;">Chat App</button>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <button id="pfpbtn" style="background-color: #cccccc00; border-color: #cccccc00; font-size: 34px; font-weight: bolder;"></p>
+                        <img id="pfp" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541" width="65px" style="border-radius: 100%; margin-top: -40px;"></button>
                 </li>
             </ul>
         </nav>
     </div>
 
-    <main id="maindiv" class="container" style="display: flex; flex-direction: column-reverse; background-color: #1b2731; width: 70%; height: 82%; border-radius: 10px; margin-top: -7%; overflow-y: auto; position: relative;">
+    <dialog id="dialog" >
+        <article style="width: 700px;">
+            <center><h3 style="margin-top: -5%;">Profile</h3></center>  
+            <p style="text-align: center;">Current profile picture</p>
+            <img id="pfp" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541" width="120px" style="border-radius: 100%; margin-left: 41%;"></img>
+            <center><button id="changepfp" style="width: 40%; margin-top: 5%;">Change Profile Picture</button></center>
+            <p style="text-align: center;">Current username</p>
+            <input id="usernamefield" type="text" placeholder="Your Username...">
+            <center><button id="changeusername" disabled="true" style="width: 40%;">Change Username</button></center>
+            <footer>
+                <a id="close" href="#cancel" role="button" class="secondary">Close</a>
+            </footer>
+        </article>
+    </dialog>
+
+    <main id="maindiv" class="container" style="display: flex; flex-direction: column-reverse; background-color: #1b2731; width: 70%; height: 75%; border-radius: 10px; margin-top: -7%; overflow-y: auto; position: relative;">
         <div id="chatdiv" style="overflow-y: auto; position: relative;">
             <div class="chat" style="padding: 4% 6% 0% 5%;" id="clonediv" hidden="true">
                 <h6 id="name" style="font-weight: bold; font-size: 22px; margin-left: 100px;">name <p style="text-align:right; margin-top: -3.3%; font-weight: normal;">Date</p></h6>
@@ -68,6 +89,21 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
     const clonediv = document.getElementById("clonediv");
     const maindiv = document.getElementById("maindiv");
     const chatdiv = document.getElementById("chatdiv");
+    const pfp = document.getElementById("pfp");
+    const changepfp = document.getElementById("changepfp");
+    const usernamefield = document.getElementById("usernamefield");
+    const changeusername = document.getElementById("changeusername");
+    const close = document.getElementById("close");
+    const dialog = document.getElementById("dialog");
+    const pfpbtn = document.getElementById("pfpbtn");
+
+    pfpbtn.onclick = function() {
+        dialog.showModal();
+    }
+
+    close.onclick = function() {
+        dialog.close();
+    }
 
     function getCookie(name) {
   // Split all cookies into an array
@@ -90,6 +126,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
   // Cookie not found
   return null;
 }
+
+var name = getCookie("username");
+usernamefield.value = name;
+usernamefield.addEventListener("keyup", function() {
+    if (usernamefield.value == name) {
+    changeusername.disabled = true;
+} else {
+    changeusername.disabled = false;
+}
+})
+
+changeusername.onclick =async function() {
+    await updateDoc(doc(db, "users", name), {
+
+    })
+}
+
 
     chatinput.addEventListener("keyup", (f) => {
         if (chatinput.value != "") {
@@ -135,9 +188,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
         const username = getCookie("username");
         send.disabled = true;
         chatinput.disabled = true;
-
- 
-
        await setDoc(doc(db, "Chats", uid.toString()), {
         user: username,
         text: chatinput.value.toString(),
