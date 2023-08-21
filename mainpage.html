@@ -29,10 +29,10 @@
             <center><h3 style="margin-top: -5%;">Profile</h3></center>  
             <p style="text-align: center;">Current profile picture</p>
             <img id="pfp" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541" width="120px" style="border-radius: 100%; margin-left: 41%;"></img>
-            <center><button id="changepfp" style="width: 40%; margin-top: 5%;">Change Profile Picture</button></center>
-            <p style="text-align: center;">Current username</p>
-            <input id="usernamefield" type="text" placeholder="Your Username...">
-            <center><button id="changeusername" disabled="true" style="width: 40%;">Change Username</button></center>
+            <input type="file" id="pfpfile" style="display: none;" accept="image/*">
+            <center><label id="changepfp" for="pfpfile" style="
+            width: 45%; margin-top: 5%; background-color: hsl(195deg 86.52% 37.82%); border-radius: 10px; padding: 0% 8% 0% 8%; color: white; cursor: pointer;
+            ">Change Profile Picture</label></center>     
             <footer>
                 <a id="close" href="#cancel" role="button" class="secondary">Close</a>
             </footer>
@@ -59,6 +59,7 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js";
     import { getFirestore, orderBy, query,  doc, setDoc, updateDoc, serverTimestamp, deleteField, deleteDoc, onSnapshot, collection, getDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
@@ -96,6 +97,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
     const close = document.getElementById("close");
     const dialog = document.getElementById("dialog");
     const pfpbtn = document.getElementById("pfpbtn");
+    const pfpfile = document.getElementById("pfpfile");
 
     pfpbtn.onclick = function() {
         dialog.showModal();
@@ -128,21 +130,54 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
 }
 
 var name = getCookie("username");
-usernamefield.value = name;
-usernamefield.addEventListener("keyup", function() {
-    if (usernamefield.value == name) {
-    changeusername.disabled = true;
-} else {
-    changeusername.disabled = false;
+
+const storage = getStorage();
+
+pfpfile.onchange = function() {
+    var file = pfpfile.files[0];
+
+    const metadata = {
+        contentType: file.type.toString()
+    }  
+    
+    const storageref = ref(storage, "ProfilePictures/" + file.name);
+    const uploadTask = uploadBytesResumable(storageref, file, metadata);
+
+    uploadTask.on("state_changed", (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+            case "paused":
+                console.log("Upload is paused");
+                break;
+            case "running":
+                console.log("Upload is running");
+                break;
+        }
+        
+    }),
+    (error) => {
+        switch (error.code) {
+            case 'storage/unauthorized':
+        // User doesn't have permission to access the object
+        break;
+      case 'storage/canceled':
+        // User canceled the upload
+        break;
+
+      // ...
+
+      case 'storage/unknown':
+        // Unknown error occurred, inspect error.serverResponse
+        break;
+        }
+    },
+    () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            console.log('File available at', downloadURL);   
+        })
+    }
 }
-})
-
-changeusername.onclick =async function() {
-    await updateDoc(doc(db, "users", name), {
-
-    })
-}
-
 
     chatinput.addEventListener("keyup", (f) => {
         if (chatinput.value != "") {
@@ -160,8 +195,8 @@ changeusername.onclick =async function() {
     }
 
     
-    const ref = collection(db, "Chats");
-    const sortedref = query(ref, orderBy("date", "desc"));
+    const chatref = collection(db, "Chats");
+    const sortedref = query(chatref, orderBy("date", "desc"));
     onSnapshot(sortedref, (snapshot) => {
         
         snapshot.docChanges().forEach((change) => {
