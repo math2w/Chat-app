@@ -122,7 +122,8 @@
             await setDoc(doc(db, "users", usernametext.value.toString()), {
                 username: usernametext.value,
                 password: passwordtext.value,
-                uid: Math.random() * 100000                 
+                uid: Math.random() * 100000,
+                profilepicture: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"               
             });
             document.cookie = "username=" + usernametext.value + ";" + "expires=" + new Date(2038, 0, 1).toUTCString(); 
             window.location.replace("mainpage.html");

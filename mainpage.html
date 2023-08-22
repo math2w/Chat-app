@@ -28,7 +28,7 @@
         <article style="width: 700px;">
             <center><h3 style="margin-top: -5%;">Profile</h3></center>  
             <p style="text-align: center;">Current profile picture</p>
-            <img id="pfp" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541" width="120px" style="border-radius: 100%; margin-left: 41%;"></img>
+            <img id="pfpdialog" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541" width="120px" style="border-radius: 100%; margin-left: 41%;"></img>
             <input type="file" id="pfpfile" style="display: none;" accept="image/*">
             <center><label id="changepfp" for="pfpfile" style="
             width: 45%; margin-top: 5%; background-color: hsl(195deg 86.52% 37.82%); border-radius: 10px; padding: 0% 8% 0% 8%; color: white; cursor: pointer;
@@ -55,6 +55,8 @@
 </body>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
@@ -75,6 +77,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
       appId: "1:363474692730:web:a20ba38348ea17d03fe9c3",
       measurementId: "G-NYXSDW76NT"
     };
+
+console.log(moment.locale()); // cs
+
 
   
     // Initialize Firebase
@@ -98,6 +103,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
     const dialog = document.getElementById("dialog");
     const pfpbtn = document.getElementById("pfpbtn");
     const pfpfile = document.getElementById("pfpfile");
+    const pfpdialog = document.getElementById("pfpdialog");
+
 
     pfpbtn.onclick = function() {
         dialog.showModal();
@@ -133,8 +140,25 @@ var name = getCookie("username");
 
 const storage = getStorage();
 
-pfpfile.onchange = function() {
+async function savePfp(downloadURL) {
+
+await updateDoc(doc(db, "users/", name), {
+    profilepicture: downloadURL
+})
+window.location.reload();
+}
+
+var pfpref = doc(db, "users", name);
+var pfpsnap = await getDoc(pfpref)
+
+if (pfpsnap.exists()) {
+    pfp.src = pfpsnap.data().profilepicture;
+    pfpdialog.src = pfpsnap.data().profilepicture;
+}
+pfpfile.onchange = async function() {
     var file = pfpfile.files[0];
+    changepfp.ariaBusy = true;
+    changepfp.disabled = true;
 
     const metadata = {
         contentType: file.type.toString()
@@ -143,7 +167,7 @@ pfpfile.onchange = function() {
     const storageref = ref(storage, "ProfilePictures/" + file.name);
     const uploadTask = uploadBytesResumable(storageref, file, metadata);
 
-    uploadTask.on("state_changed", (snapshot) => {
+    uploadTask.on("state_changed", (snapshot) =>{ 
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
     console.log('Upload is ' + progress + '% done');
         switch (snapshot.state) {
@@ -151,6 +175,14 @@ pfpfile.onchange = function() {
                 console.log("Upload is paused");
                 break;
             case "running":
+                if (progress == 100) {
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            console.log('File available at', downloadURL);   
+            pfp.src = downloadURL;
+            savePfp(downloadURL);
+
+        })
+                }
                 console.log("Upload is running");
                 break;
         }
@@ -210,6 +242,9 @@ pfpfile.onchange = function() {
             var childs = newdiv.children;
             childs[0].textContent = newItemData.user;
             childs[1].textContent = newItemData.text;
+            var now = moment();
+            console.log(console.log(moment(newItemData.date).fromNow()));
+                getpfp(newItemData, childs[2]);
             
             maindiv.appendChild(newdiv);
             maindiv.scrollTop = maindiv.scrollHeight - maindiv.clientHeight;
@@ -218,15 +253,25 @@ pfpfile.onchange = function() {
         })
     });
 
+    async function getpfp(newItemData, child) {
+        var userref = doc(db, 'users', newItemData.user.toString());
+            var usersnap = await getDoc(userref);
+            if (usersnap.exists()) {
+                console.log("user exists    ")
+                child.src = usersnap.data().profilepicture;
+            }
+    }
+
     async function sendMessage() {
         var uid = Math.floor(Math.random() * 100000000000000000);
         const username = getCookie("username");
         send.disabled = true;
         chatinput.disabled = true;
+        var now = moment();
        await setDoc(doc(db, "Chats", uid.toString()), {
         user: username,
         text: chatinput.value.toString(),
-        date: serverTimestamp() 
+        date: now.toString()
        });
        send.disabled = false;
         chatinput.disabled = false;
