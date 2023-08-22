@@ -42,9 +42,14 @@
     <main id="maindiv" class="container" style="display: flex; flex-direction: column-reverse; background-color: #1b2731; width: 70%; height: 75%; border-radius: 10px; margin-top: -7%; overflow-y: auto; position: relative;">
         <div id="chatdiv" style="overflow-y: auto; position: relative;">
             <div class="chat" style="padding: 4% 6% 0% 5%;" id="clonediv" hidden="true">
-                <h6 id="name" style="font-weight: bold; font-size: 22px; margin-left: 100px;">name <p style="text-align:right; margin-top: -3.3%; font-weight: normal;">Date</p></h6>
+                <p style="text-align:left; width: 11%; margin-bottom: -5.7%; font-size: 16px;  font-weight: lighter; margin-left: 90%; padding: 0 0 0 0;">
+                    date
+                </p>
+                <h6 id="name" style="font-weight: bold; font-size: 22px; margin-left: 100px;">name</h6>
+   
                 <p id="chattxt" style="margin-top: -1.5%; margin-left: 100px; white-space:break-spaces; overflow: auto;">chat text</p>
                 <img id="pfp" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541" width="65px" style="border-radius: 100%; margin-left: 10px; margin-top: -100px;">
+
             </div>
         </div>
     </main>
@@ -228,7 +233,7 @@ pfpfile.onchange = async function() {
 
     
     const chatref = collection(db, "Chats");
-    const sortedref = query(chatref, orderBy("date", "desc"));
+    const sortedref = query(chatref, orderBy("date", "asc"));
     onSnapshot(sortedref, (snapshot) => {
         
         snapshot.docChanges().forEach((change) => {
@@ -240,11 +245,20 @@ pfpfile.onchange = async function() {
             const newdiv = clonediv.cloneNode(true);
             newdiv.hidden = false;
             var childs = newdiv.children;
-            childs[0].textContent = newItemData.user;
-            childs[1].textContent = newItemData.text;
+            var ago = moment(newItemData.date).fromNow();
+            //var digits = ago.match(patt1);
+            //console.log(digits);
+            if (ago.includes("days")) {
+                childs[0].textContent = newItemData.date;
+            } else {
+                childs[0].textContent = ago;
+            }
+
+            childs[1].textContent = newItemData.user;
+            childs[2].textContent = newItemData.text;
             var now = moment();
-            console.log(console.log(moment(newItemData.date).fromNow()));
-                getpfp(newItemData, childs[2]);
+
+                getpfp(newItemData, childs[3]);
             
             maindiv.appendChild(newdiv);
             maindiv.scrollTop = maindiv.scrollHeight - maindiv.clientHeight;
