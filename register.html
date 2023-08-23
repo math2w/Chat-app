@@ -85,6 +85,11 @@
     const passwordtext = document.getElementById("passwordtext");
     const wrongcode = document.getElementById("wrongcode");
     const username = getCookie("username");
+    const back = document.getElementById("back");
+
+back.onclick = function() {
+    window.location.replace("index.html");
+}
 
     if (username != null) {
         const refuser = doc(db, "users", username);

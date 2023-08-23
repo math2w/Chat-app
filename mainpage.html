@@ -143,6 +143,17 @@ console.log(moment.locale()); // cs
 
 var name = getCookie("username");
 
+if (name != null) {
+        const refuser = doc(db, "users", name);
+    const snapuser = await getDoc(refuser);
+    if (snapuser.exists()) {
+        console.log("user Verified");        
+    } else {
+        window.location.replace("indexi.html");
+
+    }
+    }
+
 const storage = getStorage();
 
 async function savePfp(downloadURL) {
